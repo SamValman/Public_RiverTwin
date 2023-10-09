@@ -2,6 +2,8 @@
 """
 Created on Mon Sep 25 14:40:32 2023
 
+Author: Sam Valman
+
 """
 import tensorflow as tf
 from skimage import io, transform
@@ -13,7 +15,7 @@ from skimage.util import view_as_windows
 import gc
 import glob
 import os 
-
+import matplotlib.pyplot as plt
 #%% functions!!!!
 gc.collect()
 def tile_for_CNNPrediction(im, tile_size):
@@ -65,18 +67,32 @@ def makePrediction(tiles, model, im, tile_size=(224,224)):
     im = im[:y_axis, :x_axis,:] # make them divisable by tile size used later
     
     # Loop through each tile and make predictions
-    for i in range(num_tiles):
-        tile = tiles[i]
-        tile = np.expand_dims(tile, axis=0)
-
-        predictions_tile = model.predict(tile)
-        
-        predicted_classes_tile = np.argmax(predictions_tile, axis=-1)
-        predicted_image[i] = predicted_classes_tile[0]
+    predictions_tile = model.predict(tiles, batch_size=3)
+    ls =[]
+    for i in predictions_tile:
+        predicted_classes_tile = np.argmax(i, axis=-1)
+        ls.append(predicted_classes_tile)
     gc.collect()
+    ls = np.array(ls)
+    pr = ls.reshape(y_axis,x_axis)
+
+
+#AAAs are how it was before
+    #AAAAAA# for i in range(num_tiles):
+    #     tile = tiles[i]
+    #     tile = np.expand_dims(tile, axis=0)
+
+    #     predictions_tile = model.predict(tile)
+        
+    #     predicted_classes_tile = np.argmax(predictions_tile, axis=-1)
+    #     predicted_image[i] = predicted_classes_tile[0]
+    # gc.collect()
     
-    pr = predicted_image.reshape(y_axis,x_axis)
+    # pr = predicted_image.reshape(y_axis,x_axis)
+    #AAAAA
     predicted_image=None
+    
+    
     # # Calculate the number of tiles per row in the final image
     # tiles_per_row = int(np.sqrt(num_tiles))
     
@@ -122,7 +138,15 @@ fcn_fp = r"C:\Users\lgxsv2\TrainingData\ZZ_Tiramasu_weights.05.hdf5"
 fcn_fp = r"C:\Users\lgxsv2\TrainingData\ZZ_Tiramasu_o3.02.hdf5"
 fcn_fp= r"C:\Users\lgxsv2\TrainingData\ZZ_Tiramasu_o3.01.hdf5"
 fcn_fp = r"D:\Code\RiverTwin\ZZ_Models\tiramisu10OverfitX\model"
-
+fcn_fp = r"D:\Code\RiverTwin\ZZ_Models\tiramisuNewTrainingData\model"
+fcn_fp= r"C:\Users\lgxsv2\TrainingData\ZZ_Tiramasu_o3.01.hdf5"
+fcn_fp= r"C:\Users\lgxsv2\TrainingData\ZZ_Tiramasu_fixedGood.01.hdf5"
+fcn_fp = r"C:\Users\lgxsv2\TrainingData\ZZ_TiraPure.01.hdf5"
+# fcn_fp= r"C:\Users\lgxsv2\TrainingData\ZZ_Tiramasu_lg.01.hdf5"
+# fcn_fp = r"D:\Code\RiverTwin\ZZ_Models\tiramisuNewTrainingDataX\model"
+fcn_fp= r"C:\Users\lgxsv2\TrainingData\ZZ_TiraOG1000.01.hdf5"
+fcn_fp =r"D:\Code\RiverTwin\ZZ_Models\tiraOG10001\model"
+# fcn_fp = r"D:\Code\RiverTwin\ZZ_Models\tiramisuNewOGAll\model"
 # Replace 'your_model.hdf5' with the path to your .hdf5 model file
 # model = tf.keras.models.load_model(fcn_fp, custom_objects={"Addons>SigmoidFocalCrossEntropy": tfa.losses.SigmoidFocalCrossEntropy(reduction=tf.keras.losses.Reduction.AUTO, gamma=3, alpha=0.05)})
 model = tf.keras.models.load_model(fcn_fp)
@@ -135,7 +159,7 @@ def predictAndSave(fn, model,tile_size):
     im = io.imread(fn)
     im = im.astype(np.float32)
 
-    im1 = im[:,:,:-1]
+    im1 = im[:,:,[0,1,3]] #im[:,:,:-1]
     im = ((im1*255)/65535).astype(np.uint8)
     input_tiles = tile_for_CNNPrediction(im, 224)
     p3 = makePrediction(input_tiles, model, im)
@@ -143,12 +167,22 @@ def predictAndSave(fn, model,tile_size):
     o_fn = os.path.join(r'D:\Code\RiverTwin\ZZ_results\tira_2', fn.split('\\')[-1])
     io.imsave(o_fn, p3)
 
+
+
+
+
 fp = r'D:\Training_data\test\*.tif'
+fp = r'D:\Training_data\train\*.tif'
+a = 1
 for fn in glob.glob(fp):
-    if fn.split('\\')[-1] != '1_A3.tif':
-        continue
-    predictAndSave(fn, model,tile_size)
-    break
+    if fn.split('\\')[-1] != '1_A1.tif':
+    #     continue
+    # if a ==10:
+
+        predictAndSave(fn, model,tile_size)
+    # a+=1
+    if a ==15:
+        break
 #%%
 
 

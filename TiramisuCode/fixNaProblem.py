@@ -18,7 +18,7 @@ for i in glob.glob(path):
         im[im == -999] = 0
         im[im == 2] = 0
         name = 'Mask_'+(i.split('\\')[-1])
-        ofn = os.path.join(r"D:\Training_data\desert\doodle_good", name)
+        ofn = os.path.join(r"D:\Training_data\desert\doodless", name)
         IO.imsave(ofn, im, check_contrast=False)
     except IndexError:
         print('ERROR:  ',i)
