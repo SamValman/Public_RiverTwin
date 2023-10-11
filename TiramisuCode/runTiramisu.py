@@ -147,15 +147,15 @@ fcn_fp = r"C:\Users\lgxsv2\TrainingData\ZZ_Tiraloss2.01.hdf5"
 model = tf.keras.models.load_model(fcn_fp)
 
 tile_size = (224, 224)  # Size of each tile in pixels
+
+### isolated tile from training data to test if the functions in this script are the issue.
 fn = r"C:\Users\lgxsv2\Downloads\tile_1.npy"
 one = np.load(fn)
-# fn = r"C:\Users\lgxsv2\Downloads\tile_2.npy"
-# two = np.load(fn)
-# fn = r"C:\Users\lgxsv2\Downloads\tile_3.npy"
-# three = np.load(fn)
 
 a = model.predict(one, batch_size=3)
-aa= np.argmax(a[0], axis=-1)
+aa= np.argmax(a[0], axis=-1) # for failures some of these have been saved as images.
+################################################################################
+
 
 #%%
 def predictAndSave(fn, model,tile_size):
@@ -176,17 +176,18 @@ def predictAndSave(fn, model,tile_size):
 
 
 fp = r'D:\Training_data\test\*.tif'
-fp = r'D:\Training_data\train\*.tif'
+# fp = r'D:\Training_data\train\*.tif' # tried some of the training images 
 a = 1
+
 for fn in glob.glob(fp):
-    if fn.split('\\')[-1] == '1_A1.tif':
+    # Trying a particularly easy image
+    if fn.split('\\')[-1] == '1_A3.tif':
     #     continue
     # if a ==10:
 
         predictAndSave(fn, model,tile_size)
-    # a+=1
-    if a ==15:
         break
+
 #%%
 
 
@@ -197,7 +198,7 @@ for fn in glob.glob(fp):
 
 
 ###############################################################################
-# TEST
+# TEST to get F1 scores once the model is correct. 
 ###############################################################################
 os.chdir(r'D:\Code\RiverTwin\2022_12_08_unPacked')
 gc.collect()
