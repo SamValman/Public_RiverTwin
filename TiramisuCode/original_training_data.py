@@ -16,15 +16,15 @@ import gc
 
 
 #%%
-maskFiles=glob.glob('D:\Training_data\desert\doodless\Mask*.tif', recursive=True)
-outrootT='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/train_OGsmall/image_' #edit the folder, but leave the: image_
-outrootV='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/validate_OGsmall/image_'
+maskFiles=glob.glob('D:\Training_data\desert\doodleOnly\Mask*.tif', recursive=True)
+outrootT='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/train_100k/image_' #edit the folder, but leave the: image_
+outrootV='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/validate_100k/image_'
 #%%
 
 
 
 
-BaseSize=112
+BaseSize=224
 flipmask=True #flip the mask due to gdal odd reading
 ValidationSplit=0.2
 

@@ -32,13 +32,13 @@ image_XXXXXXX.png for the mask.  Ready for the FCN training code
 '''
 
 maskFiles=glob.glob('D:\Training_data\desert\doodless\Mask*.tif', recursive=True)
-outrootT='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/train_OGSmall/image_' #edit the folder, but leave the: image_
-outrootV='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/validate_OGsmall/image_'
+outrootT='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/train_100k/image_' #edit the folder, but leave the: image_
+outrootV='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/validate_100k/image_'
 #%%
-BaseSize=112
+BaseSize=224
 MaxScale=5
 test=False #a few samples to test that data is ok.  Check that mask and images match,  If not, change the flipmask variable.
-Target=500 #if test is false, generate this many samples PER TILE - this is not per tile this is per image
+Target=2000 #if test is false, generate this many samples PER TILE - this is not per tile this is per image
 flipmask=True #flip the mask due to gdal odd reading
 ValidationSplit=0.2
 ls = []

@@ -70,20 +70,20 @@ print(f"Tensorflow ver. {tf.__version__}")
 ##############################################################################################################
 '''User Inputs'''
 #images in jpeg and masks in png, both in same folder for either train or validate
-TrainFolder='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/train_OG1000/' 
-ValFolder='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/validate_OG1000/' #'location of validation data
+TrainFolder='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/train_100k/' 
+ValFolder='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/validate_100k/' #'location of validation data
 GenerateValidation=True #use a data generator for validation
 n_valid=5000#if above is False, take this many random samples in a tensor loaded in RAM
 
-checkpoint_filepath='C:/Users/lgxsv2/TrainingData/ZZ_TiraOG1001.{epoch:02d}.hdf5'#add a full path and name before the _weights
+checkpoint_filepath='C:/Users/lgxsv2/TrainingData/ZZ_Tiraloss2.{epoch:02d}.hdf5'#add a full path and name before the _weights
 n_class=2
 img_size=(224, 224)
 bands=3
-eps=20
-ModelName='tiraOG10001'#ADO==AllDoodleOkay
+eps=8
+ModelName='tiraloss2'#ADO==AllDoodleOkay
 BATCH_SIZE = 3
 BUFFER_SIZE = 200
-Lrate=0.0000001
+Lrate=0.00001
 exponent=-0.5
 constantLR=False
 F10=True
@@ -168,7 +168,9 @@ def normalize(input_image: tf.Tensor, input_mask: tf.Tensor) -> tuple:
     input_image = tf.cast(input_image, tf.float32)
     input_image = tf.math.divide(input_image, 127.5)
     input_image = tf.math.add(input_image, -1)
-    #input_mask=tf.one_hot(input_mask, 6)
+    # input_mask=tf.one_hot(input_mask, 6) # had been commented 
+    # I think its been commented because the labels are already one hot encoded. 
+    
     
     return input_image, input_mask
 
@@ -200,7 +202,7 @@ def load_image_train(datapoint: dict) -> tuple:
     
     
     
-    # input_image, input_mask = normalize(input_image, input_mask)
+    input_image, input_mask = normalize(input_image, input_mask)
      
     return input_image, input_mask
 
@@ -244,18 +246,19 @@ early_stopping = EarlyStopping(
 model=tiramisu(tile_size=img_size[0],bands=bands,Nclasses=n_class)
 Optim = optimizers.RMSprop(learning_rate=Lrate)
 
+model.compile(loss='binary_crossentropy',optimizer=Optim,metrics=['categorical_accuracy'])
 
-if n_class>1:
-    model.compile(optimizer=Optim, loss=tfa.losses.SigmoidFocalCrossEntropy(reduction=tf.keras.losses.Reduction.AUTO, gamma=3, alpha=0.05), metrics=['accuracy'])
-    if FineTune:
-        model.load_weights(ModelName)
+# if n_class>1:
+#     model.compile(optimizer=Optim, loss=tfa.losses.SigmoidFocalCrossEntropy(reduction=tf.keras.losses.Reduction.AUTO, gamma=4, alpha=0.01), metrics=['accuracy'])
+#     if FineTune:
+#         model.load_weights(ModelName)
     
 
-else:
-    model.compile(loss='binary_crossentropy',optimizer=Optim,metrics=['categorical_accuracy'])
-    #model.compile(optimizer=Optim, loss=bce_dice_loss, metrics=[dice_loss])
-    if FineTune:
-        model.load_weights(ModelName)
+# else:
+#     model.compile(loss='binary_crossentropy',optimizer=Optim,metrics=['categorical_accuracy'])
+#     #model.compile(optimizer=Optim, loss=bce_dice_loss, metrics=[dice_loss])
+#     if FineTune:
+#         model.load_weights(ModelName)
 
 
 '''Generate Data'''
@@ -295,11 +298,12 @@ print(str(num_samples)+' validation samples')
     
     
 
-#uncomment this to check that images and labels output by the datagen match
+# uncomment this to check that images and labels output by the datagen match
+# Couldnt get the following lines to work
 # for e in range(5):
 #     print('Epoch', e)
 #     batches = 5
-#     for x_batch, y_batch in train_ds:
+#     for x_batch, y_batch in zip(dataset['train'], vdataset['val']):
 #         for i in range(5):
 #             plt.figure()
 #             plt.subplot(1,2,1)
@@ -316,7 +320,7 @@ print(str(num_samples)+' validation samples')
 
 
 
-
+#%%
 
 '''Callbacks'''
 scheduler = tf.keras.callbacks.LearningRateScheduler(scheduler)
@@ -331,7 +335,34 @@ model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
 
 
 '''Tune and Fit FCN'''
+#%%
 
+# Assuming you have a reference to your dataset
+train_dataset = dataset['train']
+
+# Create an iterator to iterate through the dataset
+iterator = iter(train_dataset)
+
+# Define a function to extract a matching pair of tiles and labels
+def get_matching_pair():
+    tiles, labels = next(iterator)
+    return tiles, labels
+
+# Example: Extract a matching pair
+matching_pair = get_matching_pair()
+
+# Convert the matching pair to NumPy arrays
+tiles_np, labels_np = np.array(matching_pair[0]), np.array(matching_pair[1])
+la = np.argmax(labels_np[0], axis=-1)
+#%%
+fn = r"C:\Users\lgxsv2\Downloads\tile_1.npy"
+np.save(fn, tiles_np)
+# fn = r"C:\Users\lgxsv2\Downloads\tile_2.npy"
+# np.save(fn, tiles_np[1])
+# fn = r"C:\Users\lgxsv2\Downloads\tile_3.npy"
+# np.save(fn, tiles_np[2])
+
+#%%
 
 if GenerateValidation:
     history = model.fit(dataset['train'], validation_data = vdataset['val'], epochs = eps,  batch_size = BATCH_SIZE, callbacks=[scheduler,model_checkpoint_callback, early_stopping])

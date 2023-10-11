@@ -46,14 +46,37 @@ def tile_for_CNNPrediction(im, tile_size):
     gc.collect()
     return im_ls  
 
+def normalize(input_tiles):
+# (input_image: tf.Tensor) -> tuple:
+    """Rescale the pixel values of the images between -1.0 and 1.0
+    compared to [0,255] originally.
 
+    Parameters
+    ----------
+    input_image : tf.Tensor
+        Tensorflow tensor containing an image of size [SIZE,SIZE,3].
+    input_mask : tf.Tensor
+        Tensorflow tensor containing an annotation of size [SIZE,SIZE,1].
+
+    Returns
+    -------
+    tuple
+        Normalized image and its annotation.
+    """
+    # input_image = tf.cast(input_image, tf.float32)
+    # input_image = tf.math.divide(input_image, 127.5)
+    # input_image = tf.math.add(input_image, -1)
+    input_tiles = input_tiles.astype(np.float32)
+    input_tiles = input_tiles / 127.5
+    input_tiles = input_tiles - 1.0
+    return input_tiles
 
 
 
 
 def makePrediction(tiles, model, im, tile_size=(224,224)):
-    num_tiles = len(tiles)
-    predicted_image = np.empty((num_tiles, tile_size[0], tile_size[1]), dtype=np.uint8)
+    # num_tiles = len(tiles)
+    # predicted_image = np.empty((num_tiles, tile_size[0], tile_size[1]), dtype=np.uint8)
 
 
 
@@ -65,7 +88,7 @@ def makePrediction(tiles, model, im, tile_size=(224,224)):
     y_axis, x_axis = (height*tile_size[0]), (length*tile_size[0])
     
     im = im[:y_axis, :x_axis,:] # make them divisable by tile size used later
-    
+    tiles = normalize(tiles)
     # Loop through each tile and make predictions
     predictions_tile = model.predict(tiles, batch_size=3)
     ls =[]
@@ -77,28 +100,7 @@ def makePrediction(tiles, model, im, tile_size=(224,224)):
     pr = ls.reshape(y_axis,x_axis)
 
 
-#AAAs are how it was before
-    #AAAAAA# for i in range(num_tiles):
-    #     tile = tiles[i]
-    #     tile = np.expand_dims(tile, axis=0)
 
-    #     predictions_tile = model.predict(tile)
-        
-    #     predicted_classes_tile = np.argmax(predictions_tile, axis=-1)
-    #     predicted_image[i] = predicted_classes_tile[0]
-    # gc.collect()
-    
-    # pr = predicted_image.reshape(y_axis,x_axis)
-    #AAAAA
-    predicted_image=None
-    
-    
-    # # Calculate the number of tiles per row in the final image
-    # tiles_per_row = int(np.sqrt(num_tiles))
-    
-    # # Combine the tiles to create the final predicted image
-    # predicted_image = predicted_image.reshape(tiles_per_row, tiles_per_row, tile_size[0], tile_size[1])
-    # predicted_image = predicted_image.swapaxes(1, 2).reshape(im.shape[:-1])
     
     return pr
 
@@ -138,20 +140,22 @@ fcn_fp = r"C:\Users\lgxsv2\TrainingData\ZZ_Tiramasu_weights.05.hdf5"
 fcn_fp = r"C:\Users\lgxsv2\TrainingData\ZZ_Tiramasu_o3.02.hdf5"
 fcn_fp= r"C:\Users\lgxsv2\TrainingData\ZZ_Tiramasu_o3.01.hdf5"
 fcn_fp = r"D:\Code\RiverTwin\ZZ_Models\tiramisu10OverfitX\model"
-fcn_fp = r"D:\Code\RiverTwin\ZZ_Models\tiramisuNewTrainingData\model"
 fcn_fp= r"C:\Users\lgxsv2\TrainingData\ZZ_Tiramasu_o3.01.hdf5"
 fcn_fp= r"C:\Users\lgxsv2\TrainingData\ZZ_Tiramasu_fixedGood.01.hdf5"
-fcn_fp = r"C:\Users\lgxsv2\TrainingData\ZZ_TiraPure.01.hdf5"
-# fcn_fp= r"C:\Users\lgxsv2\TrainingData\ZZ_Tiramasu_lg.01.hdf5"
-# fcn_fp = r"D:\Code\RiverTwin\ZZ_Models\tiramisuNewTrainingDataX\model"
-fcn_fp= r"C:\Users\lgxsv2\TrainingData\ZZ_TiraOG1000.01.hdf5"
-fcn_fp =r"D:\Code\RiverTwin\ZZ_Models\tiraOG10001\model"
-# fcn_fp = r"D:\Code\RiverTwin\ZZ_Models\tiramisuNewOGAll\model"
-# Replace 'your_model.hdf5' with the path to your .hdf5 model file
-# model = tf.keras.models.load_model(fcn_fp, custom_objects={"Addons>SigmoidFocalCrossEntropy": tfa.losses.SigmoidFocalCrossEntropy(reduction=tf.keras.losses.Reduction.AUTO, gamma=3, alpha=0.05)})
+fcn_fp = r"C:\Users\lgxsv2\TrainingData\ZZ_Tiraloss2.01.hdf5"
+
 model = tf.keras.models.load_model(fcn_fp)
 
 tile_size = (224, 224)  # Size of each tile in pixels
+fn = r"C:\Users\lgxsv2\Downloads\tile_1.npy"
+one = np.load(fn)
+# fn = r"C:\Users\lgxsv2\Downloads\tile_2.npy"
+# two = np.load(fn)
+# fn = r"C:\Users\lgxsv2\Downloads\tile_3.npy"
+# three = np.load(fn)
+
+a = model.predict(one, batch_size=3)
+aa= np.argmax(a[0], axis=-1)
 
 #%%
 def predictAndSave(fn, model,tile_size):
@@ -175,7 +179,7 @@ fp = r'D:\Training_data\test\*.tif'
 fp = r'D:\Training_data\train\*.tif'
 a = 1
 for fn in glob.glob(fp):
-    if fn.split('\\')[-1] != '1_A1.tif':
+    if fn.split('\\')[-1] == '1_A1.tif':
     #     continue
     # if a ==10:
 
