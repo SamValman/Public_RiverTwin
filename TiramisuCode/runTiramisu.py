@@ -240,6 +240,7 @@ fcn_fp = r'D:\Code\RiverTwin\ZZ_Models\tiranept3_to\model'
 model = tf.keras.models.load_model(fcn_fp)
 
 tile_size = (224, 224)  # Size of each tile in pixels
+<<<<<<< HEAD
 # fn = r"C:\Users\lgxsv2\Downloads\tile_1.npy"
 # one = np.load(fn)
 # fn = r"C:\Users\lgxsv2\Downloads\tile_1.npy"
@@ -259,6 +260,17 @@ tile_size = (224, 224)  # Size of each tile in pixels
 #     ax[1].set_title('prediction')
 
 
+=======
+
+### isolated tile from training data to test if the functions in this script are the issue.
+fn = r"C:\Users\lgxsv2\Downloads\tile_1.npy"
+one = np.load(fn)
+
+a = model.predict(one, batch_size=3)
+aa= np.argmax(a[0], axis=-1) # for failures some of these have been saved as images.
+################################################################################
+
+>>>>>>> 849215553df959e3185f10acc1962d60b82a41d4
 
 #%%
 def predictAndSave(fn, model,tile_size):
@@ -288,17 +300,25 @@ def predictAndSave(fn, model,tile_size):
 
 
 fp = r'D:\Training_data\test\*.tif'
+<<<<<<< HEAD
 # fp = r'D:\Training_data\train\*.tif'
+=======
+# fp = r'D:\Training_data\train\*.tif' # tried some of the training images 
+>>>>>>> 849215553df959e3185f10acc1962d60b82a41d4
 a = 1
+
 for fn in glob.glob(fp):
+<<<<<<< HEAD
+=======
+    # Trying a particularly easy image
+>>>>>>> 849215553df959e3185f10acc1962d60b82a41d4
     if fn.split('\\')[-1] == '1_A3.tif':
     #     continue
     # if a ==10:
 
         predictAndSave(fn, model,tile_size)
-    # a+=1
-    if a ==15:
         break
+
 #%%
 
 
@@ -309,10 +329,17 @@ for fn in glob.glob(fp):
 
 
 ###############################################################################
+<<<<<<< HEAD
 # TEST
 # ###############################################################################
 # os.chdir(r'D:\Code\RiverTwin\2022_12_08_unPacked')
 # gc.collect()
+=======
+# TEST to get F1 scores once the model is correct. 
+###############################################################################
+os.chdir(r'D:\Code\RiverTwin\2022_12_08_unPacked')
+gc.collect()
+>>>>>>> 849215553df959e3185f10acc1962d60b82a41d4
 
 # from testSuccess import testSuccess
 # names = []
