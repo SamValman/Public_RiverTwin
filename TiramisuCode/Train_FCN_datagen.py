@@ -70,20 +70,20 @@ print(f"Tensorflow ver. {tf.__version__}")
 ##############################################################################################################
 '''User Inputs'''
 #images in jpeg and masks in png, both in same folder for either train or validate
-TrainFolder='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/train_100k/' 
-ValFolder='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/validate_100k/' #'location of validation data
+TrainFolder='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/train_nc3/' 
+ValFolder='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/validate_nc3/'
 GenerateValidation=True #use a data generator for validation
 n_valid=5000#if above is False, take this many random samples in a tensor loaded in RAM
 
-checkpoint_filepath='C:/Users/lgxsv2/TrainingData/ZZ_Tiraloss2.{epoch:02d}.hdf5'#add a full path and name before the _weights
+checkpoint_filepath='C:/Users/lgxsv2/TrainingData/ZZ_Tiraept3_to.{epoch:02d}.hdf5'#add a full path and name before the _weights
 n_class=2
 img_size=(224, 224)
 bands=3
-eps=8
-ModelName='tiraloss2'#ADO==AllDoodleOkay
+eps=5
+ModelName='tiranept3_to'#ADO==AllDoodleOkay
 BATCH_SIZE = 3
 BUFFER_SIZE = 200
-Lrate=0.00001
+Lrate=0.0001
 exponent=-0.5
 constantLR=False
 F10=True
@@ -125,6 +125,8 @@ def parse_image(img_path: str) -> dict:
     #print(img_path)
     image = tf.io.read_file(img_path)
     image = tf.image.decode_jpeg(image, channels=3)
+    # if image.max() == 0:
+    #     continue
     image = tf.image.convert_image_dtype(image, tf.uint8)
 
     # For one Image path:
@@ -169,6 +171,7 @@ def normalize(input_image: tf.Tensor, input_mask: tf.Tensor) -> tuple:
     input_image = tf.math.divide(input_image, 127.5)
     input_image = tf.math.add(input_image, -1)
     # input_mask=tf.one_hot(input_mask, 6) # had been commented 
+    #maybe input_mask = tf.one_hot(input_mask)
     # I think its been commented because the labels are already one hot encoded. 
     
     
@@ -246,7 +249,8 @@ early_stopping = EarlyStopping(
 model=tiramisu(tile_size=img_size[0],bands=bands,Nclasses=n_class)
 Optim = optimizers.RMSprop(learning_rate=Lrate)
 
-model.compile(loss='binary_crossentropy',optimizer=Optim,metrics=['categorical_accuracy'])
+# model.compile(loss='binary_crossentropy',optimizer=Optim,metrics=['categorical_accuracy'])
+model.compile(optimizer=Optim, loss=tfa.losses.SigmoidFocalCrossEntropy(reduction=tf.keras.losses.Reduction.AUTO, gamma=3, alpha=0.05), metrics=['categorical_accuracy'])
 
 # if n_class>1:
 #     model.compile(optimizer=Optim, loss=tfa.losses.SigmoidFocalCrossEntropy(reduction=tf.keras.losses.Reduction.AUTO, gamma=4, alpha=0.01), metrics=['accuracy'])
@@ -260,9 +264,12 @@ model.compile(loss='binary_crossentropy',optimizer=Optim,metrics=['categorical_a
 #     if FineTune:
 #         model.load_weights(ModelName)
 
-
+#%%
 '''Generate Data'''
 num_samples=len(glob.glob(TrainFolder+'*.jpg'))
+# for i in glob.glob(TrainFolder+'*.jpg'):
+#     if io.imread(i).max() ==0:
+        
 train_dataset = tf.data.Dataset.list_files(TrainFolder + "*.jpg", seed=42)
 train_dataset = train_dataset.map(parse_image)
 
@@ -338,29 +345,56 @@ model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
 #%%
 
 # Assuming you have a reference to your dataset
-train_dataset = dataset['train']
+# train_dataset = dataset['train']
 
-# Create an iterator to iterate through the dataset
-iterator = iter(train_dataset)
+# # Create an iterator to iterate through the dataset
+# iterator = iter(train_dataset)
 
-# Define a function to extract a matching pair of tiles and labels
-def get_matching_pair():
-    tiles, labels = next(iterator)
-    return tiles, labels
+# # Define a function to extract a matching pair of tiles and labels
+# def get_matching_pair():
+#     tiles, labels = next(iterator)
 
-# Example: Extract a matching pair
-matching_pair = get_matching_pair()
+#     return tiles, labels
 
-# Convert the matching pair to NumPy arrays
-tiles_np, labels_np = np.array(matching_pair[0]), np.array(matching_pair[1])
-la = np.argmax(labels_np[0], axis=-1)
+# mp = get_matching_pair()
+# t, l = np.array(mp[0]), np.array(mp[1])
+
+
 #%%
-fn = r"C:\Users\lgxsv2\Downloads\tile_1.npy"
-np.save(fn, tiles_np)
-# fn = r"C:\Users\lgxsv2\Downloads\tile_2.npy"
-# np.save(fn, tiles_np[1])
-# fn = r"C:\Users\lgxsv2\Downloads\tile_3.npy"
-# np.save(fn, tiles_np[2])
+# Define a function to extract a matching pair of tiles and labels
+# train_dataset = dataset['train']
+
+# # Create an iterator to iterate through the dataset
+# iterator = iter(train_dataset)
+# def get_matching_pair():
+#     while True:
+#         tiles, labels = next(iterator)
+#         t = np.array(tiles)
+#         l = np.array(labels)
+
+#         if np.max(l) > 1:
+#             break
+
+#     return t, l
+
+# # Iterate through the dataset until the maximum label value is greater than 1
+# mp = get_matching_pair()
+#%%
+# mp = get_matching_pair()
+
+# # # Convert the matching pair to NumPy arrays
+# # tiles_np, labels_np, b = np.array(matching_pair[0]), np.array(matching_pair[1])
+# # la = np.argmax(labels_np[0], axis=-1)
+# #%%
+# fn = r"C:\Users\lgxsv2\Downloads\tile_1.npy"
+# np.save(fn, tiles_np)
+# fn = r"C:\Users\lgxsv2\Downloads\label_1.npy"
+# np.save(fn, labels_np)
+
+# # fn = r"C:\Users\lgxsv2\Downloads\tile_2.npy"
+# # np.save(fn, tiles_np[1])
+# # fn = r"C:\Users\lgxsv2\Downloads\tile_3.npy"
+# # np.save(fn, tiles_np[2])
 
 #%%
 
@@ -388,7 +422,7 @@ plt.xlabel('Epochs')
 plt.ylabel('Loss')
 plt.legend()
 
-acc_values = history_dict['accuracy']
+acc_values = history_dict['categorical_accuracy']
 val_acc_values = history_dict['val_accuracy']
 plt.subplot(1,2,2)
 plt.plot(epochs, acc_values, 'go', label = 'Training acc')
@@ -426,6 +460,7 @@ def saveModelAndOutputs(model, saveModel, outfile):
     path = os.path.join(parentDir, outfile)
     
     try:
+        
         #make an outputs folder
         os.mkdir(path)
     except FileExistsError:
@@ -468,8 +503,8 @@ def graphs(model, saveModel, outfile, path):
     plt.figure()
     data = model.history.history
     plt.title(outfile+' Accuracy')
-    plt.plot(data['accuracy'], label='Accuracy')
-    plt.plot(data['val_accuracy'], label='Validation Accuracy')
+    plt.plot(data['categorical_accuracy'], label='Accuracy')
+    plt.plot(data['val_categorical_accuracy'], label='Validation Accuracy')
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend()

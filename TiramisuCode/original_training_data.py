@@ -13,12 +13,13 @@ import numpy as np
 import glob
 import os
 import gc
-
+import matplotlib.pyplot as plt
+from tensorflow.keras import utils
 
 #%%
-maskFiles=glob.glob('D:\Training_data\desert\doodleOnly\Mask*.tif', recursive=True)
-outrootT='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/train_100k/image_' #edit the folder, but leave the: image_
-outrootV='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/validate_100k/image_'
+maskFiles=glob.glob('D:\Training_data\desert\doodle_good\Mask*.tif', recursive=True)
+outrootT='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/train_nc3/image_' #edit the folder, but leave the: image_
+outrootV='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/validate_nc3/image_'
 #%%
 
 
@@ -82,10 +83,12 @@ for i in range(len(maskFiles)):
     image=np.flipud(np.rollaxis(image, 0, 3))
 
     if image.shape[2]>3:
-        image=image[:,:,[0,1,3]]
+        image=image[:,:,1:]
     image = image.astype(np.float32)
-
-    image = ((image*255)/65535).astype(np.uint8)
+    # common_mean = 3000
+    # image = image+(common_mean - image.mean())
+    # image = utils.normalize(image) # can try this after
+    image = ((image*255)/3000).astype(np.uint8)
     
     ims, labs = tile_for_CNNPrediction(image, mask, BaseSize)
     
