@@ -18,8 +18,8 @@ from tensorflow.keras import utils
 
 #%%
 maskFiles=glob.glob('D:\Training_data\desert\doodle_good\Mask*.tif', recursive=True)
-outrootT='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/train_nc3/image_' #edit the folder, but leave the: image_
-outrootV='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/validate_nc3/image_'
+outrootT='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/TR/image_' #edit the folder, but leave the: image_
+outrootV='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/VA/image_'
 #%%
 
 
@@ -88,7 +88,10 @@ for i in range(len(maskFiles)):
     # common_mean = 3000
     # image = image+(common_mean - image.mean())
     # image = utils.normalize(image) # can try this after
-    image = ((image*255)/3000).astype(np.uint8)
+    # image = ((image*255)/10000).astype(np.uint8)
+    image = ((image/6000)*255)
+    image = np.clip(image, 0, 255)
+    image = image.astype(np.uint8)
     
     ims, labs = tile_for_CNNPrediction(image, mask, BaseSize)
     

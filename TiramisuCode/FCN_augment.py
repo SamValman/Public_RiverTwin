@@ -32,8 +32,8 @@ image_XXXXXXX.png for the mask.  Ready for the FCN training code
 '''
 
 maskFiles=glob.glob('D:\Training_data\desert\doodle_good\Mask*.tif', recursive=True)
-outrootT='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/train_nc3/image_' #edit the folder, but leave the: image_
-outrootV='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/validate_nc3/image_'
+outrootT='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/TR/image_' #edit the folder, but leave the: image_
+outrootV='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/VA/image_'
 #%%
 BaseSize=224
 MaxScale=5
@@ -131,6 +131,7 @@ else:
             # image=np.flipud(np.rollaxis(image, 0, 3))
 
             n=0
+            noAvailable =0
             while n < Target:
                 augmented = aug(image=image, mask=mask)
                 
@@ -139,11 +140,21 @@ else:
                 azp = np.count_nonzero(azp)
                 if azp>20:
                     continue
+                elif np.count_nonzero(augmented['mask']==1)<20000:
+                    noAvailable +=1
+                    if noAvailable==200 and n<200:
+                        n=99999999999
+                    continue
                 else:
                     n+=1 
                     # image_light = image_light.astype(np.float32)
                     # image_light = image_light/3000
-                    image_light = ((image_light*255)/3000).astype(np.uint8)
+                    image_light = ((image_light/6000)*255)
+                    image_light = np.clip(image_light, 0, 255)
+                    image_light = image_light.astype(np.uint8)
+                    
+                    
+                    # image_light = ((image_light*255)/6000).astype(np.uint8)
                     # # image_light = ((image_light - np.min(image_light)) / (np.max(image_light) - np.min(image_light)) * 255).astype(np.uint8)
                     # image_light = ((image_light*255)/65535).astype(np.uint8)
                     

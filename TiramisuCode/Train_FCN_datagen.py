@@ -70,17 +70,17 @@ print(f"Tensorflow ver. {tf.__version__}")
 ##############################################################################################################
 '''User Inputs'''
 #images in jpeg and masks in png, both in same folder for either train or validate
-TrainFolder='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/train_nc3/' 
-ValFolder='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/validate_nc3/'
+TrainFolder='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/TR/' 
+ValFolder='C:/Users/lgxsv2/TrainingData/ZZ_Tiramasu/VA/'
 GenerateValidation=True #use a data generator for validation
 n_valid=5000#if above is False, take this many random samples in a tensor loaded in RAM
 
-checkpoint_filepath='C:/Users/lgxsv2/TrainingData/ZZ_Tiraept3_to.{epoch:02d}.hdf5'#add a full path and name before the _weights
+checkpoint_filepath='C:/Users/lgxsv2/TrainingData/ZZ_Tira_MO.{epoch:02d}.hdf5'#add a full path and name before the _weights
 n_class=2
 img_size=(224, 224)
 bands=3
-eps=5
-ModelName='tiranept3_to'#ADO==AllDoodleOkay
+eps=12
+ModelName='tira_MO'#ADO==AllDoodleOkay
 BATCH_SIZE = 3
 BUFFER_SIZE = 200
 Lrate=0.0001
@@ -361,36 +361,37 @@ model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
 
 
 #%%
-# Define a function to extract a matching pair of tiles and labels
+# # Defin!e a function to extract a matching pair of tiles and labels
 # train_dataset = dataset['train']
 
 # # Create an iterator to iterate through the dataset
 # iterator = iter(train_dataset)
 # def get_matching_pair():
-#     while True:
-#         tiles, labels = next(iterator)
-#         t = np.array(tiles)
-#         l = np.array(labels)
+#     tiles, labels = next(iterator)
 
-#         if np.max(l) > 1:
-#             break
 
-#     return t, l
+#         # if np.max(l) > 1:
+        
+#     return tiles, labels
 
 # # Iterate through the dataset until the maximum label value is greater than 1
 # mp = get_matching_pair()
-#%%
-# mp = get_matching_pair()
 
-# # # Convert the matching pair to NumPy arrays
-# # tiles_np, labels_np, b = np.array(matching_pair[0]), np.array(matching_pair[1])
-# # la = np.argmax(labels_np[0], axis=-1)
 # #%%
+# # mp = get_matching_pair()
+
+# # # # Convert the matching pair to NumPy arrays
+# tiles_np, labels_np = np.array(mp[0]), np.array(mp[1])
+# # # la = np.argmax(labels_np[0], axis=-1)
+# # #%%
 # fn = r"C:\Users\lgxsv2\Downloads\tile_1.npy"
 # np.save(fn, tiles_np)
-# fn = r"C:\Users\lgxsv2\Downloads\label_1.npy"
-# np.save(fn, labels_np)
+# fn = r"C:\Users\lgxsv2\Downloads\tile_og.tif"
+# io.imsave(fn, np.argmax(tiles_np[0],axis=-1))
 
+# fn = r"C:\Users\lgxsv2\Downloads\label_1.tif"
+
+# io.imsave(fn, np.argmax(labels_np[0],axis=-1))
 # # fn = r"C:\Users\lgxsv2\Downloads\tile_2.npy"
 # # np.save(fn, tiles_np[1])
 # # fn = r"C:\Users\lgxsv2\Downloads\tile_3.npy"
@@ -423,7 +424,7 @@ plt.ylabel('Loss')
 plt.legend()
 
 acc_values = history_dict['categorical_accuracy']
-val_acc_values = history_dict['val_accuracy']
+val_acc_values = history_dict['val_categorical_accuracy']
 plt.subplot(1,2,2)
 plt.plot(epochs, acc_values, 'go', label = 'Training acc')
 plt.plot(epochs, val_acc_values, 'g', label = 'Validation acc')

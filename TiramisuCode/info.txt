@@ -1,0 +1,13 @@
+The files that work and are needed are:
+fixNaProblem - do before anything else
+
+with gdal (env name == tira)
+original_training_data
+clean_datatiles - can be removed and inserted into original_training_data
+FCN_augment - no issues here
+
+tiramisu_tf2: the model on its own
+
+Train_FCN_datagen - fine but could do with clearing some of the comments. 
+
+runTiramisu and testing_tiles can be redone together.

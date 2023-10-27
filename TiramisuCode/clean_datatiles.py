@@ -12,8 +12,8 @@ import os
 import numpy as np
 
 
-fp_validate = r'C:\Users\lgxsv2\TrainingData\ZZ_Tiramasu\validate_nc3\*.jpg'
-fp_train = r'C:\Users\lgxsv2\TrainingData\ZZ_Tiramasu\train_nc3\*.jpg'
+fp_validate = r'C:\Users\lgxsv2\TrainingData\ZZ_Tiramasu\VA\*.jpg'
+fp_train = r'C:\Users\lgxsv2\TrainingData\ZZ_Tiramasu\TR\*.jpg'
 
 def remove_corner_pixels(fp):
     '''
