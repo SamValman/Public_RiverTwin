@@ -1,6 +1,8 @@
 # Public_RiverTwin
 Public repository for code in article "Title: An AI approach to operationalize global daily PlanetScope satellite imagery for river water masking" Currently submitted to Remote Sensing of the Environment. As the paper describes the models were developed and run on a single Windows desktop with the scripts written in Python utalising Tensorflow. The scripts should be runnable in other operating systems with minor changes. 
 
+<b> n.b. requirements.tx file includes packages not used here but gives the versions of tensorflow etc used in this study. </b>
+
 ## Runing the River Twin Water Masking model
 * The model is a CNN Supervised Classification model designed based on Carbonneau et al., 2020 https://doi.org/10.1016/j.rse.2020.112107 \
 * The model is designed for use with PlanetScope imagery and is designed to be used straight from the box and should provide good results. The model structure could be retrained from scratch with other imagery. However, other methods may be better in this regard. \
