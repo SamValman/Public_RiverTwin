@@ -52,7 +52,12 @@ This information is available elsewhere but to help the reader we have also incl
 7. MCID 1 == water | 2 == Land
 8. Band processing - classification, maximum liklihood, algorithm
 
-   
+## Retraining the model
+
+The raw planetScope images and the label images need to have the same file names e.g., ..\label\river_1.tif and ..\im\river_2.tif 
+
+Warning: There are still some instances of hard coding in the train file which need to be removed. This has been noted and will be completed as soon as possible. 
+
 ### Figures in the article
 The scripts used to create these figures are available in the FigureScripts folder. This will be updated upon final acceptace of the article to provide the latest images. 
 
