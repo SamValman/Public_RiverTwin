@@ -10,6 +10,7 @@ import skimage.io as IO
 import os
 import matplotlib.pyplot as plt
 import numpy as np
+from pathlib import Path
 
 def testSuccess(image_fp, output, time=False,
                 display_image=True, save_image=True,
@@ -42,7 +43,7 @@ def testSuccess(image_fp, output, time=False,
     # Section 1: finds the corresponding image and the name of these:
         # will error out if none exists
     label, lname = findLabel(image_fp, label_fp)
-    
+
  # put label and image into the same format
     label = np.where(label==2, 0, label)
     #capture eronous probelms
@@ -86,11 +87,9 @@ def findLabel(image_fp, label_fp):
 
     '''
     #split path for image name
-    lname = image_fp.split('\\')[-1]
+    lname = os.path.basename(image_fp)
     print(lname)
-    #remove later
-    # lname = lname[:-1]
-    
+
     #hardcoded position of test labels
     label_path = os.path.join(label_fp, lname)
     
@@ -128,7 +127,7 @@ def report(label, im, output, lname, time):
     label = label.reshape(-1,1)
     im = im.reshape(-1,1)
     
-    
+
     r = metrics.classification_report(label, im ,target_names=(['Water','Land']), output_dict=True)
     r = pd.DataFrame(r).transpose()
     try:
@@ -193,7 +192,7 @@ def plotimage(im, label, lname, save, output):
     plt.suptitle(lname)
     
     if save:
-        output = output + '\\ims'
+        output = os.path.join(output, "ims")
         if os.path.exists(output):
             print('saving to existing dir')
         else:

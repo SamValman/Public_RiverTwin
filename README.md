@@ -5,7 +5,80 @@ https://www.sciencedirect.com/science/article/pii/S0034425723004844
 
 <b> n.b. requirements.tx file includes packages not used here but gives the versions of tensorflow etc used in this study. </b>
 
-## Runing the River Twin Water Masking model
+
+# Installation & Setup
+## Requirements
+- Python 3.10
+- Pip
+- Python virtualenv
+
+I used **Python 3.10** running on a Windows machine within WSL2 in a python virtual environment.
+The following steps describe how I set up my environment.
+
+## Environment Setup
+1. Ensure you're using python v3.10 `python --version`
+2. Create a new pip virtual environment `python -m venv venv`
+3. Activate the virtual environment 
+   * Windows: `venv\Scripts\Activate.ps1`
+   * Linux/Mac/WSL: `source venv/bin/activate`
+4. Install required packages `python -m pip install -r requirements.txt`
+
+# Quick Start Guide
+The following shows how to run the model from a bash shell on a Linux based system.
+Alternatively you could run the files using an IDE.
+
+## Train the Model
+### Setup training data
+Copy training .tiff files into `./Data/Train/` and the associated labels into `./Data/Label/`.
+Each training image should have a corresponding label image. 
+The folder structure should have the following structure.
+```
+Public_RiverTwin/
+├── Data/
+│   ├── Train/            
+│   │   └── image1.tiff   
+│   │   └── image2.tiff  
+│   └── Label/           
+│       └── image1.tiff   
+│       └── image2.tiff   
+```
+
+### Configure
+Configure the tile size by changing the `run_train.py` file in the `RiverMaskCode` directory.
+By default, this is set to 20. 
+```python
+# Configuration
+tileSize = 20 # Change tile size here
+```
+
+### Run
+Run the training script (make sure the virtual environment from setup is still activated).
+```bash
+python RiverMaskCode/run_train.py 
+```
+
+### Output
+The trained model will be saved to the `Output/Model/{date-time}/` folder.
+
+## Running the Model
+### Configure
+Select the model you wish to use by changing the `run_model.py` file in the `RiverMaskCode` directory.
+By default, this is set to the included M20 model. 
+```python
+# Configuration
+modelPath = FILE_PATH_MODEL_M20 # Change file path to model here
+tileSize = 20 # Change tile size here
+```
+
+### Run
+```bash
+python RiverMaskCode/run_model.py
+```
+
+### Output
+The generated masks and other results can be found in the `Output/Results/{date-time}` folder. 
+
+## Running the River Twin Water Masking model
 * The model is a CNN Supervised Classification model designed based on Carbonneau et al., 2020 https://doi.org/10.1016/j.rse.2020.112107 \
 * The model is designed for use with PlanetScope imagery and is designed to be used straight from the box and should provide good results. The model structure could be retrained from scratch with other imagery. However, other methods may be better in this regard. \
 ** The CSC method has two main benefits here:**\

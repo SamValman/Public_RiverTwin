@@ -544,11 +544,11 @@ def save_imgs(P1,P2, P3, output, image_fp, tracker):
     
     
     #paths for each phase
-    path1 = output + '\\p1'
-    path2 = output + '\\p2'
-    path3 = output + '\\p3'
+    path1 = os.path.join(output, 'p1')
+    path2 = os.path.join(output, 'p2')
+    path3 = os.path.join(output, 'p3')
 
-    im_name = image_fp.split('\\')[-1]
+    im_name = os.path.basename(image_fp)
     # im_name = im_name+'f'
     
     #check if already exists
@@ -556,7 +556,7 @@ def save_imgs(P1,P2, P3, output, image_fp, tracker):
         print('saving to existing dir')
     else:
         #make main dir
-        os.mkdir(output)
+        os.makedirs(output, exist_ok=True)
     # add dir inside this for each section
 
     if os.path.exists(path1):
@@ -565,10 +565,13 @@ def save_imgs(P1,P2, P3, output, image_fp, tracker):
         os.mkdir(path1)
         os.mkdir(path2)
         os.mkdir(path3)
-    
+
     path1 = os.path.join(path1,  im_name)
     path2 = os.path.join(path2,  im_name)
     path3 = os.path.join(path3,  im_name)
+
+    print("path1", path1)
+    print("image_fp", image_fp)
 
     IO.imsave(path1, np.uint8(P1), check_contrast=False)
     IO.imsave(path2, np.uint8(P2), check_contrast=False)

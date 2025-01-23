@@ -10,8 +10,9 @@ Created on Wed Oct 26 16:39:34 2022
 
 @author: lgxsv2
 """
-#%% packages
+import logging
 
+#%% packages
 import numpy as np
 import math
 import pandas as pd
@@ -19,7 +20,7 @@ import pandas as pd
 #plotting
 import matplotlib.pyplot as plt
 from IPython import get_ipython
-get_ipython().run_line_magic('matplotlib', 'qt')
+# get_ipython().run_line_magic('matplotlib', 'qt')
 
 
 # should probably only use one keras layers style
@@ -42,8 +43,10 @@ import datetime
 import shutil
 
 
-import tensorflow_addons as tfa
+from filepaths import FP_DIRECTORY_DATA_LABELS, FP_DIRECTORY_DATA_TRAIN, FP_DIRECTORY_OUTPUT_TEMP, FP_DIRECTORY_OUTPUT_MODEL
 import gc
+import tensorflow_addons as tfa
+
 #%% Wrapper
 
 
@@ -146,7 +149,7 @@ def CollectAndOrganiseCNNTrainingData(trainingData, tileSize,
     
     # balance training data as requested (saves regardless)
     ## Section one: c function to save and balance training data
-    path = pruneAndSave(X_train, y_train, balanceTrainingData, tileSize)
+    path = pruneAndSave(X_train, y_train, balanceTrainingData)
         
         
         
@@ -179,9 +182,9 @@ def ListUsableFileNames(trainingData):
     im_list, label_list = [], []
     
     # list all label files available and cut to just their names
-    file_ls =  glob.glob(os.path.join('D:/Training_data/label_train/', '*.tif'))
-    file_ls = [x[29:] for x in file_ls]
-    
+    file_ls =  glob.glob(os.path.join(FP_DIRECTORY_DATA_LABELS, '*.tif'))
+    file_ls = [os.path.basename(x) for x in file_ls]
+
     for i in trainingData:
         # checks if that image has a label
         if i in file_ls:
@@ -213,9 +216,9 @@ def getPaths(riverID):
 
     '''
     # riverID = riverID +'.tif'
-    imPath = os.path.join(r'D:/Training_data/train/', riverID) 
-    labPath = os.path.join(r'D:/Training_data/label_train/', riverID) 
-    
+    imPath = os.path.join(FP_DIRECTORY_DATA_TRAIN, riverID)
+    labPath = os.path.join(FP_DIRECTORY_DATA_LABELS, riverID)
+
 
     return imPath, labPath
 
@@ -277,7 +280,7 @@ def stackTiles(im_list, label_list, tile_size):
             print(X_temp)
             continue
     
-    # combine lissts into format (N, tileSize, tileSize, bandNumber)
+    # combine lists into format (N, tileSize, tileSize, bandNumber)
     # band number is binary for y_train
     X_train = np.concatenate((X_train), axis=0)
     y_train = np.concatenate((y_train), axis=0)
@@ -337,6 +340,7 @@ def tileForCNN(im, label, tileSize):
                 band_tile = im[(temp_m-tileSize): temp_m, (temp_n-tileSize):temp_n, :]
                 # captures tile errors if they occur 
                 if band_tile.shape != (tileSize,tileSize,4):
+                    logging.warning('Train data found with incorrect shape')
                     continue
                 # label is just a list so only needs int appended 
                 im_ls.append(band_tile)
@@ -365,7 +369,7 @@ def tileForCNN(im, label, tileSize):
 
 
 #%% Section one:C
-def pruneAndSave(X_train, y_train, balanceTrainingData, tileSize):
+def pruneAndSave(X_train, y_train, balanceTrainingData):
     '''
     organises the balancing and saving of training data for the model
 
@@ -393,21 +397,16 @@ def pruneAndSave(X_train, y_train, balanceTrainingData, tileSize):
         new y_train
 
     '''
-    #create_training_directory_to_save_into
-    parent_dir='D:/Training_data/temporary_tiles'
-    parent_dir = r'C:\Users\lgxsv2\TrainingData'
-
-    
     #extra folder name for two in a day
     directory =  datetime.datetime.today().strftime('%Y_%m_%d')
     # +extra_folder_name If wanted it needs to be added in all levels
-    path = os.path.join(parent_dir, directory)
+    path = os.path.join(FP_DIRECTORY_OUTPUT_TEMP, directory)
     
    #remove dir if already exisits
     if os.path.exists(path):
         print('overwriting old directory from today')
         shutil.rmtree(path)
-    os.mkdir(path)
+    os.makedirs(path, exist_ok=True)
     
     # add water and land label categories 
     water = os.path.join(path, 'water')
@@ -553,7 +552,7 @@ def reloadTrainingData(folder, epoch, bs):
     # Section 2: B
     # Apply the parse function to the dataset - get actual results
     dataset = dataset.map(parse_tfrecord)
-    
+
     # Shuffle the data
     buffer_size = trainingDataSize  # Use a buffer size of 1000 elements
     dataset = dataset.shuffle(buffer_size, reshuffle_each_iteration=True )
@@ -666,66 +665,66 @@ def fit_CNN(Xy_train, Xy_test, epochs, tileSize, lr,
     '''
     # Transfer model Unused:
         
-    TransferedModel = VGG16(include_top=False, weights=None, input_shape=(tileSize, tileSize, 4)) #input_shape=(40,40,4)
-    flat = keras.layers.Flatten()(TransferedModel.layers[-1].output)
-    class1 = keras.layers.Dense(32, activation='relu')(flat) 
-    output = keras.layers.Dense(2, activation='softmax')(class1)
-    CNN = keras.Model(inputs=TransferedModel.inputs, outputs=output)
-        
-    CNN.compile(loss="sparse_categorical_crossentropy", 
-                  optimizer="adam",
-                  metrics=["accuracy"])
+    # TransferedModel = VGG16(include_top=False, weights=None, input_shape=(tileSize, tileSize, 4)) #input_shape=(40,40,4)
+    # flat = keras.layers.Flatten()(TransferedModel.layers[-1].output)
+    # class1 = keras.layers.Dense(32, activation='relu')(flat)
+    # output = keras.layers.Dense(2, activation='softmax')(class1)
+    # CNN = keras.Model(inputs=TransferedModel.inputs, outputs=output)
+    #
+    # CNN.compile(loss="sparse_categorical_crossentropy",
+    #               optimizer="adam",
+    #               metrics=["accuracy"])
 
 
 
 
 
-    # # # Sequential model
-    # CNN = keras.Sequential()
-    
-    # # #Section 3: A - get data aug layer
-    # # data_augmentation = daug(tileSize)
-    
-    # # CNN.add(data_augmentation)
+    # # Sequential model
+    CNN = keras.Sequential()
 
-    # CNN.add(Conv2D(32, (3, 3), activation='relu', input_shape=(tileSize, tileSize, 4)))
-    # CNN.add(tf.keras.layers.BatchNormalization())
+    #Section 3: A - get data aug layer
+    data_augmentation = daug(tileSize)
 
-    # CNN.add(MaxPool2D(pool_size=(2,2)))
-    
-    # CNN.add(Conv2D(32, (3,3), activation=("relu")))
-    # CNN.add(MaxPool2D(pool_size=(2,2)))
-    
-    # CNN.add(Flatten())
-    # CNN.add(Dense(32, activation='relu'))
-    # CNN.add(tf.keras.layers.Dropout(0.5))
+    CNN.add(data_augmentation)
 
-    # CNN.add(Dense(2, activation='softmax'))
+    CNN.add(Conv2D(32, (3, 3), activation='relu', input_shape=(tileSize, tileSize, 4)))
+    CNN.add(tf.keras.layers.BatchNormalization())
 
-    
+    CNN.add(MaxPool2D(pool_size=(2,2)))
 
-    
-    # # # Section 3: B
-    # loss = loss_options(loss_type, alpha, gamma)
-    
-    # # #compile based on loss function from 2a
-    # CNN.compile(loss=loss, optimizer=optimizers.Adam(learning_rate=lr),
-    #             metrics=["accuracy"])
-   
-    # # # section 3: B
-    # # #call back for learning rate decay
-    # callback = LR_options(lr,lr_type, epochs)
+    CNN.add(Conv2D(32, (3,3), activation=("relu")))
+    CNN.add(MaxPool2D(pool_size=(2,2)))
 
-    # # # section 3: D
-    # es = MarochovCallback(threshold=0.90)
+    CNN.add(Flatten())
+    CNN.add(Dense(32, activation='relu'))
+    CNN.add(tf.keras.layers.Dropout(0.5))
+
+    CNN.add(Dense(2, activation='softmax'))
 
 
-    
-    # if callback == None:
-    #     callback = [es]
-    # else:
-    #     callback = callback+[es]
-    
+
+
+    # Section 3: B
+    loss = loss_options(loss_type, alpha, gamma)
+
+    #compile based on loss function from 2a
+    CNN.compile(loss=loss, optimizer=optimizers.Adam(learning_rate=lr),
+                metrics=["accuracy"])
+
+    # # section 3: B
+    # #call back for learning rate decay
+    callback = LR_options(lr,lr_type, epochs)
+
+    # # section 3: D
+    es = MarochovCallback(threshold=0.90)
+
+
+
+    if callback == None:
+        callback = [es]
+    else:
+        callback = callback+[es]
+
     # v_steps = int(math.floor(int(trainingDataSize*0.9)/32))
     CNN.fit(Xy_train, epochs=epochs ,
             validation_data=Xy_test) #, validation_steps=v_steps, steps_per_epoch=v_steps, callbacks=callback,
@@ -811,18 +810,17 @@ def saveModelAndOutputs(model, saveModel, outfile):
     
     
     # put in the model output section
-    parentDir = 'D:/Code/RiverTwin/ZZ_Models'
-    path = os.path.join(parentDir, outfile)
+    path = os.path.join(FP_DIRECTORY_OUTPUT_MODEL, outfile)
     
     try:
         #make an outputs folder
-        os.mkdir(path)
+        os.makedirs(path, exist_ok=True)
     except FileExistsError:
         # if the file exists just make the folder name different by adding an X
         new_output = outfile + 'X'
         # and repeat
-        path = os.path.join(parentDir, new_output)
-        os.mkdir(path)
+        path = os.path.join(FP_DIRECTORY_OUTPUT_MODEL, new_output)
+        os.makedirs(path, exist_ok=True)
 
         
     
